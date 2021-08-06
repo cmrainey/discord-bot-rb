@@ -1,1 +1,1 @@
-rake discord_bot
+bundle exec rake discord_bot
