@@ -1,1 +1,1 @@
-ruby discord_bot.rb
+rake discord_bot
