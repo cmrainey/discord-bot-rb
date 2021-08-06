@@ -1,1 +1,1 @@
-ruby ./discord_bot.rb
+ruby discord_bot.rb
