@@ -5,7 +5,7 @@ require_relative 'lib/command'
 @hal = Discordrb::Bot.new token: ENV['token'], client_id: ENV['client_id']
 @hal.run true
 
-@hal.game = "Pod Bay Doors"
+@hal.playing = "Pod Bay Doors"
 
 @hal.message contains: "!roll" do |event|
   response = Command.roll(event.content)
