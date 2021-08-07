@@ -2,10 +2,15 @@ require_relative 'open_weather'
 
 class Command
 
-  def self.roll(message)
+  def initialize(event)
+    @event = event
+    @message = event.content
+  end
+
+  def roll
     # simple dice roller takes a command in the form "xdy" where x is the number of dice and y is
     # the number of faces, e.g. 1d20 or 8d6
-    dice = message.gsub("!roll ", "")
+    dice = @message.gsub("!roll ", "")
     if /\d+d\d+/.match(dice)
       dice_arr = dice.split("d")
       number = dice_arr[0].to_i
@@ -24,7 +29,7 @@ class Command
     return text
   end
 
-  def self.progressbar
+  def progressbar
     # calculates the perctange elapsed of the current year and posts an ACII art progress bar
     today = Date.today
     days_this_year = Date.new(today.year, 12, 31).yday
@@ -42,7 +47,7 @@ class Command
     return "`" + text + "`"
   end
 
-  def self.babyprogress
+  def babyprogress
     today = Date.today
     baby_start = Date.new(2020,11,20)
     baby_finish = Date.new(2021,8,23)
@@ -59,51 +64,52 @@ class Command
     return "Baby is " + baby_pct.to_s + "\% complete!\n" + "`" + bar + "`"
   end
 
-  def self.weather(message)
+  def weather
     # gets the current weather at a given 5-digit ZIP code from the OpenWeather API
     # see open_weath_api.rb for the API wrapper class
-    zip = message.gsub("!weather ", "").to_i.to_s
+    zip = @message.gsub("!weather ", "").to_i.to_s
     if zip.length < 5
       zeroes = 5 - zip.length
       zeroes.times do
         zip = "0" + zip
       end
     end
-    begin
-      text = OpenWeatherApi.call_api(zip)
-    rescue
-      text = "Couldn't get weather for ZIP code #{zip}."
-    end
+    weather = OpenWeatherApi.new(zip)
+    text = weather.get_weather
     return text
   end
 
-  def self.create_channel(event)
-    args = event.content.split(" ")
+  def createchannel
+    args = @event.content.split(" ")
     if args[0] == "!createchannel"
       if args[1] != nil
         name = args[1]
         if args[2] != nil
           if args[2] == "private"
-            role = event.server.roles.find { |r| r.name == '@everyone' }
+            role = @event.server.roles.find { |r| r.name == '@everyone' }
             overwrites = []
             overwrites << Discordrb::Overwrite.new(role.id, type: 'role', allow: 0, deny: 1024)
-            overwrites << Discordrb::Overwrite.new(event.message.author.id, type: "member", allow: 139653860417, deny: 0)
-            event.message.mentions.each do |u|
+            overwrites << Discordrb::Overwrite.new(@event.message.author.id, type: "member", allow: 139653860417, deny: 0)
+            @event.message.mentions.each do |u|
               overwrites << Discordrb::Overwrite.new(u.id, type: "member", allow: 139653860417, deny: 0)
             end
-            channel = event.server.create_channel(name, parent: event.channel.parent_id, permission_overwrites: overwrites)
+            channel = @event.server.create_channel(name, parent: @event.channel.parent_id, permission_overwrites: overwrites)
+            response = "Successfully created new private channel #{channel.name}!"
           else
-            channel = event.server.create_channel(name, parent: event.channel.parent_id)
+            channel = @event.server.create_channel(name, parent: @event.channel.parent_id)
+            response = "Successfully created new private channel #{channel.name}!"
           end
         else
-          channel = event.server.create_channel(name, parent: event.channel.parent_id)
+          channel = @event.server.create_channel(name, parent: @event.channel.parent_id)
+          response = "Successfully created new channel #{channel.name}!"
         end
       else
-        event.respond "Error: I need a channel name to create one!"
+        response = "Error: I need a channel name to create one."
       end
     else
-      event.respond "Error: Invalid channel creation command."
+      response = "Error: Invalid channel creation command."
     end
+    return response
   end
 
 end
