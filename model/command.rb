@@ -81,33 +81,27 @@ class Command
 
   def createchannel
     args = @event.content.split(" ")
-    if args[0] == "!createchannel"
-      if args[1] != nil
-        name = args[1]
-        if args[2] != nil
-          if args[2] == "private"
-            role = @event.server.roles.find { |r| r.name == '@everyone' }
-            overwrites = []
-            overwrites << Discordrb::Overwrite.new(role.id, type: 'role', allow: 0, deny: 1024)
-            overwrites << Discordrb::Overwrite.new(@event.message.author.id, type: "member", allow: 139653860417, deny: 0)
-            @event.message.mentions.each do |u|
-              overwrites << Discordrb::Overwrite.new(u.id, type: "member", allow: 139653860417, deny: 0)
-            end
-            channel = @event.server.create_channel(name, parent: @event.channel.parent_id, permission_overwrites: overwrites)
-            response = "Successfully created new private channel #{channel.name}!"
-          else
-            channel = @event.server.create_channel(name, parent: @event.channel.parent_id)
-            response = "Successfully created new private channel #{channel.name}!"
-          end
-        else
-          channel = @event.server.create_channel(name, parent: @event.channel.parent_id)
-          response = "Successfully created new channel #{channel.name}!"
+    if args[1] != nil
+      name = args[1]
+      if args[2] != nil && args[2] == "private"
+        role = @event.server.roles.find { |r| r.name == '@everyone' }
+        
+        overwrites = []
+        overwrites << Discordrb::Overwrite.new(role.id, type: 'role', allow: 0, deny: 1024)
+        overwrites << Discordrb::Overwrite.new(@event.message.author.id, type: "member", allow: 139653860417, deny: 0)
+        
+        @event.message.mentions.each do |u|
+          overwrites << Discordrb::Overwrite.new(u.id, type: "member", allow: 139653860417, deny: 0)
         end
+
+        channel = @event.server.create_channel(name, parent: @event.channel.parent_id, permission_overwrites: overwrites)
+        response = "Successfully created new private channel #{channel.name}!"
       else
-        response = "Error: I need a channel name to create one."
+        channel = @event.server.create_channel(name, parent: @event.channel.parent_id)
+        response = "Successfully created new channel #{channel.name}!"
       end
     else
-      response = "Error: Invalid channel creation command."
+      response = "Error: I need a channel name to create one."
     end
     return response
   end
