@@ -5,6 +5,20 @@ class Command
   def initialize(event)
     @event = event
     @message = event.content
+    command_text = @message.split(" ")[0]
+    if command_text[0] == "!"
+      @command = command_text.gsub("!", "")
+    else
+      @command = nil
+    end
+  end
+
+  def execute
+    if self.respond_to?(@command)
+      self.public_send(@command)
+    else
+      puts "Can't execute #{@command}"
+    end
   end
 
   def roll

@@ -17,14 +17,10 @@ class DiscordBot
   end
 
   def handle_command(event)
-    command_text = event.content.split(" ")[0]
-    if command_text[0] == "!"
-      command_text = command_text.gsub("!", "")
-      command = Command.new(event)
-      if command.respond_to?(command_text)
-        response = command.public_send(command_text)
-        event.respond(response)
-      end
+    command = Command.new(event)
+    response = command.execute
+    if response != nil
+      event.respond(response)
     end
   end
 end
